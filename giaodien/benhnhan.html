@@ -1,239 +1,421 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <title>Quản lý bệnh nhân</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, sans-serif;
-      background-color: #f9fbfc;
-      margin: 0;
-      padding: 30px;
-      max-width: 900px;
-      margin-left: auto;
-      margin-right: auto;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý bệnh nhân</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
 
-    h2 {
-      text-align: center;
-      color: #2c3e50;
-      margin-bottom: 30px;
-    }
+        :root {
+            --primary-color: #4CAF50; /* Green */
+            --primary-dark: #388E3C;
+            --secondary-color: #2196F3; /* Blue */
+            --accent-color: #FFC107; /* Amber */
+            --text-color: #333;
+            --light-gray: #f4f4f4;
+            --border-color: #ddd;
+            --shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
 
-    form {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      margin-bottom: 30px;
-    }
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--light-gray);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
 
-    form input, form textarea {
-      flex: 1 1 200px;
-      padding: 10px;
-      font-size: 14px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
 
-    form button {
-      padding: 12px 20px;
-      background-color: #2980b9;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
+        h2 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
 
-    form button:hover {
-      background-color: #1f6391;
-    }
+        /* Form Styling */
+        form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: #fcfcfc;
+        }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background-color: #fff;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      border-radius: 10px;
-      overflow: hidden;
-    }
+        form input[type="text"],
+        form input[type="date"],
+        form textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            box-sizing: border-box; /* Ensures padding doesn't add to the width */
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
 
-    th {
-      background-color: #2c3e50;
-      color: white;
-      padding: 12px;
-      text-align: left;
-    }
+        form input[type="text"]:focus,
+        form input[type="date"]:focus,
+        form textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
 
-    td {
-      padding: 12px;
-      border-bottom: 1px solid #eee;
-    }
+        form button {
+            grid-column: span var(--form-button-span, 1); /* For single column on smaller screens */
+            padding: 12px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
 
-    tr:nth-child(even) {
-      background-color: #f8f8f8;
-    }
+        form button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
 
-    td button {
-      background-color: #e74c3c;
-      border: none;
-      padding: 6px 12px;
-      color: white;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 13px;
-      margin-right: 6px;
-      transition: background-color 0.3s ease;
-    }
+        @media (min-width: 768px) {
+            #addPatientForm {
+                grid-template-columns: 2fr 1fr 2fr auto;
+                --form-button-span: 1;
+            }
+            #addPatientForm button {
+                grid-column: auto;
+            }
+            #addRecordForm {
+                grid-template-columns: repeat(2, 1fr);
+                --form-button-span: 2;
+            }
+            #addRecordForm button {
+                grid-column: 1 / span 2;
+            }
+        }
 
-    td button:hover {
-      background-color: #c0392b;
-    }
 
-    #recordsModal {
-      display: none;
-      position: fixed;
-      top: 10%;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #fff;
-      border-radius: 10px;
-      padding: 20px;
-      z-index: 1000;
-      min-width: 350px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    }
+        /* Table Styling */
+        table {
+            width: 100%;
+            border-collapse: separate; /* Use separate to allow border-radius on cells */
+            border-spacing: 0;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow);
+            border-radius: 8px;
+            overflow: hidden; /* Ensures rounded corners are applied */
+        }
 
-    #recordsModal h3 {
-      margin-top: 0;
-      color: #2c3e50;
-    }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
 
-    #recordsList {
-      max-height: 250px;
-      overflow-y: auto;
-      margin-bottom: 10px;
-      border: 1px solid #ddd;
-      padding: 10px;
-      border-radius: 6px;
-      background-color: #f9f9f9;
-    }
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
 
-    #recordsModal input,
-    #recordsModal textarea,
-    #recordsModal button {
-      width: 100%;
-      padding: 10px;
-      margin: 6px 0;
-      font-size: 14px;
-    }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
 
-    #recordsModal button {
-      background-color: #27ae60;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
 
-    #recordsModal button:hover {
-      background-color: #1e874b;
-    }
+        td button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s ease;
+        }
 
-    .export-button {
-      background-color: #8e44ad;
-      color: white;
-      padding: 10px 16px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-bottom: 15px;
-    }
+        td button.edit {
+            background-color: var(--secondary-color);
+            color: white;
+        }
 
-    .export-button:hover {
-      background-color: #6c3483;
-    }
+        td button.edit:hover {
+            background-color: #1976D2;
+        }
 
-    @media (max-width: 600px) {
-      form {
-        flex-direction: column;
-      }
+        td button.delete {
+            background-color: #f44336; /* Red */
+            color: white;
+        }
 
-      table, thead, tbody, th, td, tr {
-        display: block;
-      }
+        td button.delete:hover {
+            background-color: #D32F2F;
+        }
 
-      th, td {
-        text-align: right;
-        padding-left: 50%;
-        position: relative;
-      }
+        td button.view-records {
+            background-color: #FFC107; /* Amber */
+            color: var(--text-color);
+        }
 
-      td::before {
-        content: attr(data-label);
-        position: absolute;
-        left: 15px;
-        font-weight: bold;
-        text-align: left;
-      }
+        td button.view-records:hover {
+            background-color: #FFA000;
+        }
 
-      th {
-        background-color: #2c3e50;
-        color: #fff;
-        position: sticky;
-        top: 0;
-        z-index: 1;
-      }
-    }
-  </style>
+        /* Modal Styling */
+        #recordsModal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            border: none; /* Removed default border */
+            border-radius: 10px;
+            padding: 30px;
+            z-index: 1000;
+            min-width: 400px;
+            max-width: 600px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            animation: fadeIn 0.3s ease-out;
+            max-height: 90vh; /* Limit height for scrollable content */
+            overflow-y: auto; /* Enable scrolling for modal content */
+        }
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://unpkg.com/jspdf-autotable@3.8.0/dist/jspdf.plugin.autotable.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+        #recordsModal h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #recordsList {
+            max-height: 200px; /* Adjusted for better modal spacing */
+            overflow-y: auto;
+            margin-bottom: 15px;
+            padding-right: 10px; /* For scrollbar spacing */
+        }
+
+        .record-item {
+            background-color: var(--light-gray);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+            position: relative;
+        }
+
+        .record-item strong {
+            color: var(--primary-dark);
+        }
+
+        .record-item .record-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .record-item .record-actions button {
+            background: none;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-left: 5px;
+            padding: 5px;
+            border-radius: 3px;
+            transition: background-color 0.2s;
+        }
+
+        .record-item .record-actions button.edit-record {
+            color: var(--secondary-color);
+        }
+        .record-item .record-actions button.edit-record:hover {
+            background-color: rgba(33, 150, 243, 0.1);
+        }
+
+        .record-item .record-actions button.delete-record {
+            color: #f44336;
+        }
+        .record-item .record-actions button.delete-record:hover {
+            background-color: rgba(244, 67, 54, 0.1);
+        }
+
+
+        #recordsModal input,
+        #recordsModal textarea {
+            width: calc(100% - 24px); /* Account for padding */
+            margin-bottom: 10px;
+        }
+
+        #recordsModal button {
+            width: auto; /* Override 100% width from form styles */
+            margin-right: 10px;
+            padding: 10px 15px;
+            font-size: 1rem;
+        }
+
+        #recordsModal button.close-modal {
+            background-color: #607D8B; /* Grey */
+            color: white;
+        }
+        #recordsModal button.close-modal:hover {
+            background-color: #455A64;
+        }
+
+
+        /* Overlay for modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        /* Export PDF Button */
+        .export-button-container {
+            text-align: center;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+
+        .export-button-container button {
+            padding: 12px 25px;
+            background-color: #7B1FA2; /* Deep Purple */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 500;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .export-button-container button:hover {
+            background-color: #5F0E92;
+            transform: translateY(-2px);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -60%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 767px) {
+            .container {
+                padding: 15px;
+                margin: 10px auto;
+            }
+
+            form {
+                grid-template-columns: 1fr;
+                padding: 15px;
+            }
+
+            form button {
+                grid-column: 1 / span 1;
+            }
+
+            th, td {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+
+            td button {
+                padding: 6px 10px;
+                font-size: 0.8rem;
+                margin: 2px;
+            }
+
+            #recordsModal {
+                min-width: unset;
+                width: 90%;
+                padding: 20px;
+            }
+
+            #recordsList {
+                max-height: 150px;
+            }
+
+            .export-button-container button {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/jspdf-autotable@3.8.0/dist/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://unpkg.com/jspdf@2.5.1/dist/fonts/Roboto/Roboto-normal.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
 </head>
-
+<input type="text" id="searchPhone" placeholder="Tìm theo SĐT..." style="margin-bottom:12px; padding:6px 12px; border-radius:6px; border:1px solid #ccc;">
 <body>
-  <h2>Quản lý thông tin bệnh nhân</h2>
+    <div class="container">
+        <h2>Quản lý thông tin bệnh nhân</h2>
 
-  <form id="addPatientForm">
-    <input type="text" id="newName" placeholder="Họ tên" required>
-    <input type="text" id="newPhone" placeholder="SĐT" required>
-    <input type="text" id="newNote" placeholder="Ghi chú">
-    <button type="submit">Thêm bệnh nhân</button>
-  </form>
+        <form id="addPatientForm">
+            <input type="text" id="newName" placeholder="Họ tên" required>
+            <input type="text" id="newPhone" placeholder="Số điện thoại" required>
+            <input type="text" id="newNote" placeholder="Ghi chú">
+            <button type="submit">Thêm bệnh nhân</button>
+        </form>
 
-  <button onclick="exportPatientsPDF()" class="export-button">Xuất PDF</button>
+        <table id="patientsTable">
+            <thead>
+                <tr>
+                    <th id="sortByName" style="cursor:pointer;">Họ tên &#8597;</th>
+                    <th>SĐT</th>
+                    <th>Ghi chú</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
 
-  <table id="patientsTable">
-    <thead>
-      <tr>
-        <th>Họ tên</th>
-        <th>SĐT</th>
-        <th>Ghi chú</th>
-        <th>Hành động</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+        <div class="export-button-container">
+            <button onclick="exportPatientsPDF()">Xuất báo cáo PDF</button>
+        </div>
+    </div>
 
-  <div id="recordsModal">
-    <h3 id="modalTitle">Hồ sơ khám bệnh</h3>
-    <div id="recordsList"></div>
-    <form id="addRecordForm">
-      <input type="date" id="recordDate" required>
-      <input type="text" id="diagnosis" placeholder="Chẩn đoán" required>
-      <textarea id="prescription" placeholder="Toa thuốc"></textarea>
-      <textarea id="recordNote" placeholder="Ghi chú"></textarea>
-      <button type="submit">Thêm hồ sơ</button>
-    </form>
-    <button onclick="closeRecordsModal()">Đóng</button>
-  </div>
+    <div id="recordsModal">
+        <h3 id="modalTitle"></h3>
+        <div id="recordsList"></div>
+        <form id="addRecordForm">
+            <input type="date" id="recordDate" required>
+            <input type="text" id="diagnosis" placeholder="Chẩn đoán" required>
+            <textarea id="prescription" placeholder="Toa thuốc"></textarea>
+            <textarea id="recordNote" placeholder="Ghi chú"></textarea>
+            <button type="submit">Thêm hồ sơ</button>
+        </form>
+        <button onclick="closeRecordsModal()" class="close-modal">Đóng</button>
+    </div>
+    <div class="modal-overlay" onclick="closeRecordsModal()"></div>
 
-  <script src="../xuli/js/bn.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="../xuli/js/bn.js"></script>
+
 </body>
 </html>

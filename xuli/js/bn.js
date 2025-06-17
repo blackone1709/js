@@ -1,10 +1,33 @@
-document.addEventListener('DOMContentLoaded', loadPatients);
+let allPatients = []; // Lưu toàn bộ danh sách để lọc
+
+document.addEventListener('DOMContentLoaded', async function() {
+    await loadPatients();
+
+    // Thêm sự kiện tìm kiếm theo SĐT
+    const searchInput = document.getElementById('searchPhone');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const keyword = searchInput.value.trim();
+            if (!keyword) {
+                renderPatients(allPatients);
+            } else {
+                const filtered = allPatients.filter(p => p.phone.includes(keyword));
+                renderPatients(filtered);
+            }
+        });
+    }
+});
 
 async function loadPatients() {
     const res = await fetch('http://localhost:5000/api/patients', { credentials: 'include' });
     const result = await res.json();
+    allPatients = result.data; // Lưu lại để tìm kiếm
+    renderPatients(allPatients);
+}
+
+function renderPatients(list) {
     const tbody = document.querySelector('#patientsTable tbody');
-    tbody.innerHTML = result.data.map(p => `
+    tbody.innerHTML = list.map(p => `
         <tr data-id="${p.id}">
             <td class="name-cell">${p.name}</td>
             <td class="phone-cell">${p.phone}</td>
@@ -18,6 +41,7 @@ async function loadPatients() {
     `).join('');
 }
 
+// ...giữ nguyên các hàm enableEdit, updatePatient, deletePatient, showRecords, loadRecords, closeRecordsModal, exportPatientsPDF...
 window.enableEdit = function(id) {
     const row = document.querySelector(`tr[data-id="${id}"]`);
     const nameCell = row.querySelector('.name-cell');
@@ -127,7 +151,18 @@ window.closeRecordsModal = function() {
     document.getElementById('recordsModal').style.display = 'none';
 }
 
-
+let sortPatientAsc = true;
+const nameHeader = document.getElementById('sortByName');
+if (nameHeader) {
+    nameHeader.addEventListener('click', function() {
+        sortPatientAsc = !sortPatientAsc;
+        let sorted = [...allPatients];
+        sorted.sort((a, b) => sortPatientAsc
+            ? a.name.localeCompare(b.name, 'vi')
+            : b.name.localeCompare(a.name, 'vi'));
+        renderPatients(sorted);
+    });
+}
 async function exportPatientsPDF() {
     const res = await fetch('http://localhost:5000/api/patients', { credentials: 'include' });
     const result = await res.json();
@@ -198,3 +233,4 @@ async function exportPatientsPDF() {
 
     pdfMake.createPdf(docDefinition).download('bao_cao_benh_nhan.pdf');
 }
+
