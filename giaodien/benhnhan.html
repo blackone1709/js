@@ -406,13 +406,16 @@
         <form id="addRecordForm">
             <input type="date" id="recordDate" required>
             <input type="text" id="diagnosis" placeholder="Chẩn đoán" required>
-            <textarea id="prescription" placeholder="Toa thuốc"></textarea>
+
             <textarea id="recordNote" placeholder="Ghi chú"></textarea>
             <button type="submit">Thêm hồ sơ</button>
         </form>
+      
         <button onclick="closeRecordsModal()" class="close-modal">Đóng</button>
     </div>
     <div class="modal-overlay" onclick="closeRecordsModal()"></div>
+
+
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="../xuli/js/bn.js"></script>

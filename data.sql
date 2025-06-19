@@ -37,7 +37,6 @@ CREATE TABLE doctors (
 CREATE TABLE medical_records (
   id INT NOT NULL AUTO_INCREMENT,
   patient_id INT DEFAULT NULL,
-  prescription TEXT,
   note TEXT,
   date DATE DEFAULT NULL,
   diagnosis TEXT,
@@ -54,3 +53,12 @@ CREATE TABLE doctor_logins (
   PRIMARY KEY (doctor_id),
   UNIQUE KEY username (username)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE prescriptions (
+    prescription_id INT AUTO_INCREMENT PRIMARY KEY,
+    medical_records_id INT NOT NULL,
+    note TEXT,
+    duration VARCHAR(50),
+    frequency VARCHAR(50),
+    dosage VARCHAR(50),
+    FOREIGN KEY (medical_records_id) REFERENCES medical_records(id)
+);

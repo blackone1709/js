@@ -336,6 +336,61 @@ def register_doctor():
     cursor.close()
     conn.close()
     return jsonify({'success': True, 'message': 'Đăng ký thành công'})
+
+@app.route('/api/medical_record/<int:medical_records_id>/prescriptions', methods=['GET'])
+def get_prescriptions(medical_records_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM prescriptions WHERE medical_records_id=%s", (medical_records_id,))
+    data = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return jsonify({'success': True, 'data': data})
+@app.route('/api/medical_record/<int:medical_records_id>/prescriptions', methods=['POST'])
+def add_prescription(medical_records_id):
+    data = request.get_json()
+    note = data.get('note', '')
+    duration = data.get('duration', '')
+    frequency = data.get('frequency', '')
+    dosage = data.get('dosage', '')
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO prescriptions (medical_records_id, note, duration, frequency, dosage) VALUES (%s, %s, %s, %s, %s)",
+        (medical_records_id, note, duration, frequency, dosage)
+    )
+    conn.commit()
+    prescription_id = cursor.lastrowid
+    cursor.close()
+    conn.close()
+    return jsonify({'success': True, 'prescription_id': prescription_id})
+
+@app.route('/api/prescription/<int:prescription_id>', methods=['PUT'])
+def update_prescription(prescription_id):
+    data = request.get_json()
+    note = data.get('note', '')
+    duration = data.get('duration', '')
+    frequency = data.get('frequency', '')
+    dosage = data.get('dosage', '')
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE prescriptions SET note=%s, duration=%s, frequency=%s, dosage=%s WHERE prescription_id=%s",
+        (note, duration, frequency, dosage, prescription_id)
+    )
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return jsonify({'success': True})
+@app.route('/api/prescription/<int:prescription_id>', methods=['DELETE'])
+def delete_prescription(prescription_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM prescriptions WHERE prescription_id=%s", (prescription_id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return jsonify({'success': True})
 # Đăng xuất
 @app.route('/api/logout', methods=['POST'])
 def logout():

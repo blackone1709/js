@@ -41,7 +41,6 @@ function renderPatients(list) {
     `).join('');
 }
 
-// ...giữ nguyên các hàm enableEdit, updatePatient, deletePatient, showRecords, loadRecords, closeRecordsModal, exportPatientsPDF...
 window.enableEdit = function(id) {
     const row = document.querySelector(`tr[data-id="${id}"]`);
     const nameCell = row.querySelector('.name-cell');
@@ -125,7 +124,6 @@ window.showRecords = async function(patientId, patientName) {
             body: JSON.stringify({
                 date: document.getElementById('recordDate').value,
                 diagnosis: document.getElementById('diagnosis').value,
-                prescription: document.getElementById('prescription').value,
                 note: document.getElementById('recordNote').value
             })
         });
@@ -133,18 +131,76 @@ window.showRecords = async function(patientId, patientName) {
         this.reset();
     }
 }
-
 window.loadRecords = async function(patientId) {
     const res = await fetch(`http://localhost:5000/api/patient/${patientId}/records`, { credentials: 'include' });
     const result = await res.json();
     document.getElementById('recordsList').innerHTML = result.data.map(r => `
-        <div style="border-bottom:1px solid #eee; margin-bottom:10px;">
+        <div style="border-bottom:1px solid #eee; margin-bottom:10px;" id="record_${r.id}">
             <b>Ngày:</b> ${r.date} <br>
             <b>Chẩn đoán:</b> ${r.diagnosis} <br>
-            <b>Toa thuốc:</b> ${r.prescription} <br>
             <b>Ghi chú:</b> ${r.note}
+            <br>
+            <button onclick="showPrescriptions(${r.id})">Xem toa thuốc</button>
+            <div id="prescriptionsWrap_${r.id}"></div>
         </div>
     `).join('');
+}
+
+window.showPrescriptions = async function(medicalRecordId) {
+    // Hiển thị danh sách toa thuốc
+    const res = await fetch(`http://localhost:5000/api/medical_record/${medicalRecordId}/prescriptions`);
+    const result = await res.json();
+    const wrap = document.getElementById(`prescriptionsWrap_${medicalRecordId}`);
+    wrap.innerHTML = `
+        <div>
+            <h4>Toa thuốc</h4>
+            <div>
+                ${
+                    result.data.length
+                    ? `<table border="1" cellpadding="6">
+                        <tr>
+                            <th>Ghi chú</th>
+                            <th>Thời gian dùng</th>
+                            <th>Tần suất</th>
+                            <th>Liều lượng</th>
+                        </tr>
+                        ${result.data.map(p => `
+                            <tr>
+                                <td>${p.note || ''}</td>
+                                <td>${p.duration || ''}</td>
+                                <td>${p.frequency || ''}</td>
+                                <td>${p.dosage || ''}</td>
+                            </tr>
+                        `).join('')}
+                    </table>`
+                    : '<p>Chưa có toa thuốc nào.</p>'
+                }
+            </div>
+            <form onsubmit="return addPrescription(event, ${medicalRecordId})" style="margin-top:10px;">
+                <input type="text" name="note" placeholder="Ghi chú" required>
+                <input type="text" name="duration" placeholder="Thời gian dùng" required>
+                <input type="text" name="frequency" placeholder="Tần suất" required>
+                <input type="text" name="dosage" placeholder="Liều lượng" required>
+                <button type="submit">Thêm toa thuốc</button>
+            </form>
+        </div>
+    `;
+}
+window.addPrescription = async function(e, medicalRecordId) {
+    e.preventDefault();
+    const form = e.target;
+    const note = form.note.value;
+    const duration = form.duration.value;
+    const frequency = form.frequency.value;
+    const dosage = form.dosage.value;
+    await fetch(`http://localhost:5000/api/medical_record/${medicalRecordId}/prescriptions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ note, duration, frequency, dosage })
+    });
+    form.reset();
+    showPrescriptions(medicalRecordId);
+    return false;
 }
 
 window.closeRecordsModal = function() {
@@ -234,3 +290,35 @@ async function exportPatientsPDF() {
     pdfMake.createPdf(docDefinition).download('bao_cao_benh_nhan.pdf');
 }
 
+let currentMedicalRecordId = null; // Gán id hồ sơ khám khi mở chi tiết
+
+// Lấy danh sách toa thuốc
+async function loadPrescriptions(medicalRecordId) {
+    currentMedicalRecordId = medicalRecordId;
+    const res = await fetch(`http://localhost:5000/api/medical_record/${medicalRecordId}/prescriptions`);
+    const result = await res.json();
+    const listDiv = document.getElementById(`prescriptionsList_${medicalRecordId}`);
+    if (!listDiv) return;
+    if (!result.data.length) {
+        listDiv.innerHTML = '<p>Chưa có toa thuốc nào.</p>';
+        return;
+    }
+    listDiv.innerHTML = `
+        <table border="1" cellpadding="6">
+            <tr>
+                <th>Ghi chú</th>
+                <th>Thời gian dùng</th>
+                <th>Tần suất</th>
+                <th>Liều lượng</th>
+            </tr>
+            ${result.data.map(p => `
+                <tr>
+                    <td>${p.note || ''}</td>
+                    <td>${p.duration || ''}</td>
+                    <td>${p.frequency || ''}</td>
+                    <td>${p.dosage || ''}</td>
+                </tr>
+            `).join('')}
+        </table>
+    `;
+}
