@@ -1,41 +1,56 @@
 create database pktn;
 use pktn;
 CREATE TABLE patients (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(100),
-    phone VARCHAR(20)
-);
+  id INT NOT NULL AUTO_INCREMENT,
+  name VARCHAR(100) DEFAULT NULL,
+  phone VARCHAR(20) DEFAULT NULL,
+  note TEXT,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE appointments (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    patient_name VARCHAR(100),
-    phone VARCHAR(20),
-    date DATE,
-    time TIME,
-    note TEXT,
-    patient_id INT,
-    FOREIGN KEY (patient_id) REFERENCES patients(id)
-);
+  id INT NOT NULL AUTO_INCREMENT,
+  patient_name VARCHAR(100) DEFAULT NULL,
+  phone VARCHAR(20) DEFAULT NULL,
+  date DATE DEFAULT NULL,
+  time TIME DEFAULT NULL,
+  note TEXT,
+  patient_id INT DEFAULT NULL,
+  doctor_id INT DEFAULT NULL,
+  PRIMARY KEY (id),
+  KEY patient_id (patient_id),
+  KEY fk_doctor (doctor_id),
+  CONSTRAINT appointments_ibfk_1 FOREIGN KEY (patient_id) REFERENCES patients (id),
+  CONSTRAINT fk_doctor FOREIGN KEY (doctor_id) REFERENCES doctor_logins (doctor_id)
+)
+ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 
 CREATE TABLE doctors (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    full_name VARCHAR(100),
-    username VARCHAR(50),
-    working_hours VARCHAR(100)
-);
+  id INT NOT NULL AUTO_INCREMENT,
+  full_name VARCHAR(100) DEFAULT NULL,
+  phone VARCHAR(20) DEFAULT NULL,
+  working_hours VARCHAR(50) DEFAULT NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE medical_records (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    patient_id INT,
-    prescription TEXT,
-    note TEXT,
-    date DATE,
-    diagnosis TEXT,
-    FOREIGN KEY (patient_id) REFERENCES patients(id)
-);
+  id INT NOT NULL AUTO_INCREMENT,
+  patient_id INT DEFAULT NULL,
+  prescription TEXT,
+  note TEXT,
+  date DATE DEFAULT NULL,
+  diagnosis TEXT,
+  PRIMARY KEY (id),
+  KEY patient_id (patient_id),
+  CONSTRAINT medical_records_ibfk_1 FOREIGN KEY (patient_id) REFERENCES patients(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE doctor_logins (
-    doctor_id INT PRIMARY KEY,
-    username VARCHAR(50) UNIQUE,
-    password VARCHAR(100),
-    FOREIGN KEY (doctor_id) REFERENCES doctors(id)
-);
-ALTER TABLE appointments ADD COLUMN doctor_id INT NULL;
-ALTER TABLE appointments ADD CONSTRAINT fk_doctor FOREIGN KEY (doctor_id) REFERENCES doctor_logins(doctor_id);
+  doctor_id INT NOT NULL AUTO_INCREMENT,
+  username VARCHAR(50) DEFAULT NULL,
+  password VARCHAR(100) DEFAULT NULL,
+  full_name VARCHAR(255) DEFAULT NULL,
+  PRIMARY KEY (doctor_id),
+  UNIQUE KEY username (username)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
